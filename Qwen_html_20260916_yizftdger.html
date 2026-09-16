@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Центрге тартқыш үдеу - Интерактивті ойын</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.2em;
+        }
+
+        .task-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .task-number {
+            background: #667eea;
+            color: white;
+            display: inline-block;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .task-title {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .problem-text {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            padding: 20px;
+            border: 3px solid #ddd;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .option-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .option-btn.correct {
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+            animation: pulse 0.5s;
+        }
+
+        .option-btn.wrong {
+            background: #f44336;
+            color: white;
+            border-color: #f44336;
+            animation: shake 0.5s;
+        }
+
+        .option-btn.disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .feedback {
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+            font-size: 1.1em;
+        }
+
+        .feedback.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        .feedback.success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .feedback.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .matching-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .matching-column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .matching-item {
+            padding: 20px;
+            background: #f8f9fa;
+            border: 3px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .matching-item:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .matching-item.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .matching-item.matched {
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+            pointer-events: none;
+        }
+
+        .matching-item.wrong-match {
+            background: #f44336;
+            color: white;
+            border-color: #f44336;
+            animation: shake 0.5s;
+        }
+
+        .formula {
+            font-family: 'Courier New', monospace;
+            font-size: 1.2em;
+            background: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .check-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+            display: block;
+            width: 100%;
+        }
+
+        .check-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .score {
+            text-align: center;
+            font-size: 1.5em;
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .score.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        .hint {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .hint.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .options {
+                grid-template-columns: 1fr;
+            }
+            .matching-container {
+                grid-template-columns: 1fr;
+            }
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Центрге тартқыш үдеу</h1>
+            <p>9-сынып | Физика пәні | Интерактивті ойын</p>
+        </div>
+
+        <!-- Task 1: Problem -->
+        <div class="task-card">
+            <div class="task-number">1-тапсырма</div>
+            <h2 class="task-title">📐 Есеп шығару</h2>
+            
+            <div class="problem-text">
+                <strong>Шарты:</strong><br>
+                Көпірдің доғалы бөлігі радиусы <strong>R = 100 м</strong> болатын шеңбер доғасы тәрізді. 
+                Осы көпір арқылы <strong>v = 20 м/с</strong> тұрақты жылдамдықпен автомобиль өтіп барады.<br><br>
+                <strong>Сұрақ:</strong> Көліктің центрге тартқыш үдеуі (a) қандай?
+            </div>
+
+            <div class="options" id="task1Options">
+                <div class="option-btn" data-value="2" data-correct="false">A) 2 м/с²</div>
+                <div class="option-btn" data-value="4" data-correct="true">B) 4 м/с²</div>
+                <div class="option-btn" data-value="20" data-correct="false">C) 20 м/с²</div>
+                <div class="option-btn" data-value="400" data-correct="false">D) 400 м/с²</div>
+            </div>
+
+            <button class="check-btn" onclick="checkTask1()">Жауапты тексеру</button>
+            
+            <div class="feedback" id="feedback1"></div>
+            
+            <div class="hint" id="hint1">
+                <strong> Кеңес:</strong> Центрге тартқыш үдеудің формуласы: <span class="formula">a = v²/R</span><br>
+                Есептеу: a = 20²/100 = 400/100 = 4 м/с²
+            </div>
+        </div>
+
+        <!-- Task 2: Matching -->
+        <div class="task-card">
+            <div class="task-number">2-тапсырма</div>
+            <h2 class="task-title">🔗 Сәйкестендіру</h2>
+            
+            <div class="problem-text">
+                Сол жақтағы физикалық шамаларды оң жақтағы формулалармен сәйкестендіріңіз.
+            </div>
+
+            <div class="matching-container">
+                <div class="matching-column" id="leftColumn">
+                    <div class="matching-item" data-id="1" onclick="selectItem(this, 'left')">
+                        1. Центрге тартқыш үдеу
+                    </div>
+                    <div class="matching-item" data-id="2" onclick="selectItem(this, 'left')">
+                        2. Бұрыштық жылдамдық
+                    </div>
+                    <div class="matching-item" data-id="3" onclick="selectItem(this, 'left')">
+                        3. Айналу периоды
+                    </div>
+                    <div class="matching-item" data-id="4" onclick="selectItem(this, 'left')">
+                        4. Сызықтық жылдамдық
+                    </div>
+                </div>
+
+                <div class="matching-column" id="rightColumn">
+                    <div class="matching-item" data-id="a" onclick="selectItem(this, 'right')">
+                        <span class="formula">T = t/N</span><br>
+                        <small>(секунд)</small>
+                    </div>
+                    <div class="matching-item" data-id="b" onclick="selectItem(this, 'right')">
+                        <span class="formula">a = v²/R</span><br>
+                        <small>(м/с²)</small>
+                    </div>
+                    <div class="matching-item" data-id="c" onclick="selectItem(this, 'right')">
+                        <span class="formula">ω = 2π/T</span><br>
+                        <small>(рад/с)</small>
+                    </div>
+                    <div class="matching-item" data-id="d" onclick="selectItem(this, 'right')">
+                        <span class="formula">v = 2πR/T</span><br>
+                        <small>(м/с)</small>
+                    </div>
+                </div>
+            </div>
+
+            <button class="check-btn" onclick="checkMatching()">Сәйкестікті тексеру</button>
+            
+            <div class="feedback" id="feedback2"></div>
+        </div>
+
+        <div class="score" id="finalScore"></div>
+    </div>
+
+    <script>
+        let selectedLeft = null;
+        let selectedRight = null;
+        let matches = {};
+        let task1Completed = false;
+        let task2Score = 0;
+
+        // Task 1 functionality
+        function checkTask1() {
+            if (task1Completed) return;
+
+            const options = document.querySelectorAll('#task1Options .option-btn');
+            let selected = null;
+
+            options.forEach(opt => {
+                if (opt.classList.contains('correct') || opt.classList.contains('wrong')) {
+                    selected = opt;
+                }
+            });
+
+            if (!selected) {
+                alert('Бір нұсқаны таңдаңыз!');
+                return;
+            }
+
+            const feedback = document.getElementById('feedback1');
+            const hint = document.getElementById('hint1');
+            
+            options.forEach(opt => opt.classList.add('disabled'));
+
+            if (selected.dataset.correct === 'true') {
+                feedback.className = 'feedback success show';
+                feedback.innerHTML = '<strong>🎉 Жақсы!</strong> Дұрыс жауап!<br><br>Шешуі: a = v²/R = 20²/100 = 400/100 = 4 м/с²';
+                task1Completed = true;
+                updateScore();
+            } else {
+                feedback.className = 'feedback error show';
+                feedback.innerHTML = '<strong> Қате!</strong> Басқа нұсқаны таңдаңыз.<br>Кеңесті қараңыз!';
+                hint.classList.add('show');
+            }
+        }
+
+        // Task 2 functionality
+        function selectItem(element, side) {
+            if (element.classList.contains('matched')) return;
+
+            // Remove previous selection in same column
+            const column = side === 'left' ? document.getElementById('leftColumn') : document.getElementById('rightColumn');
+            column.querySelectorAll('.matching-item').forEach(item => {
+                if (!item.classList.contains('matched')) {
+                    item.classList.remove('selected');
+                }
+            });
+
+            // Add selection
+            element.classList.add('selected');
+
+            if (side === 'left') {
+                selectedLeft = element.dataset.id;
+            } else {
+                selectedRight = element.dataset.id;
+            }
+
+            // Check if both selected
+            if (selectedLeft && selectedRight) {
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            const leftItem = document.querySelector(`#leftColumn .matching-item[data-id="${selectedLeft}"]`);
+            const rightItem = document.querySelector(`#rightColumn .matching-item[data-id="${selectedRight}"]`);
+
+            const correctMatches = {
+                '1': 'b', // Центрге тартқыш үдеу -> a = v²/R
+                '2': 'c', // Бұрыштық жылдамдық -> ω = 2π/T
+                '3': 'a', // Период -> T = t/N
+                '4': 'd'  // Сызықтық жылдамдық -> v = 2πR/T
+            };
+
+            if (correctMatches[selectedLeft] === selectedRight) {
+                // Correct match
+                leftItem.classList.remove('selected');
+                rightItem.classList.remove('selected');
+                leftItem.classList.add('matched');
+                rightItem.classList.add('matched');
+                
+                matches[selectedLeft] = selectedRight;
+                
+                // Check if all matched
+                if (Object.keys(matches).length === 4) {
+                    task2Score = 4;
+                    document.getElementById('feedback2').className = 'feedback success show';
+                    document.getElementById('feedback2').innerHTML = '<strong>🏆 Тамаша!</strong> Барлық сәйкестіктер дұрыс!';
+                    updateScore();
+                }
+            } else {
+                // Wrong match
+                leftItem.classList.add('wrong-match');
+                rightItem.classList.add('wrong-match');
+                
+                setTimeout(() => {
+                    leftItem.classList.remove('wrong-match', 'selected');
+                    rightItem.classList.remove('wrong-match', 'selected');
+                }, 1000);
+            }
+
+            selectedLeft = null;
+            selectedRight = null;
+        }
+
+        function checkMatching() {
+            const matchedCount = Object.keys(matches).length;
+            if (matchedCount < 4) {
+                document.getElementById('feedback2').className = 'feedback error show';
+                document.getElementById('feedback2').innerHTML = `<strong> Әлі бітірмедіңіз!</strong> ${matchedCount}/4 сәйкестік табылды. Жалғастырыңыз!`;
+            }
+        }
+
+        function updateScore() {
+            const scoreDiv = document.getElementById('finalScore');
+            let totalScore = 0;
+            if (task1Completed) totalScore += 1;
+            totalScore += task2Score;
+            
+            const maxScore = 5;
+            const percentage = (totalScore / maxScore * 100).toFixed(0);
+            
+            let message = '';
+            if (percentage === 100) message = ' Керемет! Сіз тақырыпты толық меңгердіңіз!';
+            else if (percentage >= 80) message = '👏 Жақсы жұмыс!';
+            else if (percentage >= 60) message = '💪 Жақсы, бірақ әлі де жұмыс істеу керек!';
+            else message = '📚 Тақырыпты қайталаңыз!';
+            
+            scoreDiv.innerHTML = `
+                <div>Сіздің нәтижеңіз: ${totalScore}/${maxScore} (${percentage}%)</div>
+                <div style="font-size: 0.8em; margin-top: 10px;">${message}</div>
+            `;
+            scoreDiv.classList.add('show');
+        }
+
+        // Add click handlers for task 1
+        document.querySelectorAll('#task1Options .option-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (this.classList.contains('disabled')) return;
+                
+                document.querySelectorAll('#task1Options .option-btn').forEach(b => {
+                    b.classList.remove('correct', 'wrong');
+                });
+                
+                if (this.dataset.correct === 'true') {
+                    this.classList.add('correct');
+                } else {
+                    this.classList.add('wrong');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
